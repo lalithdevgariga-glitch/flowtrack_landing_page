@@ -1,0 +1,1187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FlowTrack — Project management that keeps everyone on the same page</title>
+<meta name="description" content="FlowTrack replaces scattered updates and status meetings with one shared source of truth for small teams.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#111318;
+    --ink-soft:#1c1f27;
+    --paper:#FAFAF8;
+    --paper-dim:#F0EFEA;
+    --accent:#FF6B4A;
+    --accent-dark:#E85A3A;
+    --border:#E4E2DA;
+    --text-body:#4A4B52;
+    --text-muted:#8A8B92;
+    --white:#FFFFFF;
+  }
+
+  *,*::before,*::after{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    font-family:'Inter',sans-serif;
+    color:var(--text-body);
+    background:var(--paper);
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,h4{
+    font-family:'Space Grotesk',sans-serif;
+    color:var(--ink);
+    margin:0;
+    letter-spacing:-0.02em;
+    line-height:1.15;
+  }
+  p{margin:0;}
+  a{color:inherit;text-decoration:none;}
+  ul{list-style:none;margin:0;padding:0;}
+  img,svg{display:block;}
+  button{font-family:inherit;cursor:pointer;border:none;background:none;}
+
+  .wrap{
+    max-width:1180px;
+    margin:0 auto;
+    padding:0 24px;
+  }
+
+  /* ---------- Buttons ---------- */
+  .btn{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    padding:13px 26px;
+    border-radius:7px;
+    font-weight:600;
+    font-size:15px;
+    transition:transform 150ms ease, filter 150ms ease, background-color 150ms ease, box-shadow 150ms ease;
+    white-space:nowrap;
+  }
+  .btn-primary{
+    background:var(--accent);
+    color:#fff;
+  }
+  .btn-primary:hover{
+    filter:brightness(1.07);
+    transform:translateY(-1px);
+  }
+  .btn-dark{
+    background:var(--ink);
+    color:#fff;
+  }
+  .btn-dark:hover{
+    filter:brightness(1.3);
+    transform:translateY(-1px);
+  }
+  .btn-outline{
+    background:transparent;
+    color:var(--ink);
+    border:1.5px solid var(--border);
+  }
+  .btn-outline:hover{
+    border-color:var(--ink);
+    transform:translateY(-1px);
+  }
+  .btn-block{width:100%;}
+
+  /* ---------- Reveal animation ---------- */
+  .reveal{
+    opacity:0;
+    transform:translateY(20px);
+    transition:opacity 400ms ease, transform 400ms ease;
+  }
+  .reveal.is-visible{
+    opacity:1;
+    transform:translateY(0);
+  }
+
+  /* ================= NAVBAR ================= */
+  .navbar{
+    position:sticky;
+    top:0;
+    z-index:1000;
+    background:rgba(250,250,248,0.88);
+    backdrop-filter:blur(10px);
+    -webkit-backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--border);
+  }
+  .nav-inner{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    height:72px;
+  }
+  .logo{
+    display:flex;
+    align-items:center;
+    gap:9px;
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:700;
+    font-size:20px;
+    color:var(--ink);
+  }
+  .logo-mark{
+    width:28px;height:28px;
+    border-radius:7px;
+    background:var(--ink);
+    display:flex;align-items:center;justify-content:center;
+    flex-shrink:0;
+  }
+  .logo-mark svg{width:16px;height:16px;}
+
+  .nav-links{
+    display:flex;
+    align-items:center;
+    gap:36px;
+  }
+  .nav-links a{
+    font-size:15px;
+    font-weight:500;
+    color:var(--ink);
+    opacity:0.75;
+    transition:opacity 150ms ease;
+  }
+  .nav-links a:hover{opacity:1;color:var(--accent);}
+
+  .nav-cta{display:flex;align-items:center;gap:20px;}
+  .nav-login{font-size:15px;font-weight:600;color:var(--ink);opacity:0.8;}
+  .nav-login:hover{opacity:1;}
+
+  .hamburger{
+    display:none;
+    width:40px;height:40px;
+    align-items:center;justify-content:center;
+    flex-shrink:0;
+    z-index:1200;
+    position:relative;
+  }
+  .hamburger span{
+    display:block;
+    width:22px;height:2px;
+    background:var(--ink);
+    position:absolute;
+    transition:transform 220ms ease, opacity 220ms ease, top 220ms ease;
+  }
+  .hamburger span:nth-child(1){top:14px;}
+  .hamburger span:nth-child(2){top:20px;}
+  .hamburger span:nth-child(3){top:26px;}
+  .hamburger.active span:nth-child(1){top:20px;transform:rotate(45deg);}
+  .hamburger.active span:nth-child(2){opacity:0;}
+  .hamburger.active span:nth-child(3){top:20px;transform:rotate(-45deg);}
+
+  .mobile-overlay{
+    position:fixed;
+    inset:0;
+    background:var(--ink);
+    z-index:1100;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:32px;
+    transform:translateX(100%);
+    transition:transform 320ms ease;
+  }
+  .mobile-overlay.active{transform:translateX(0);}
+  .mobile-overlay a{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:28px;
+    font-weight:600;
+    color:#fff;
+  }
+  .mobile-overlay a:hover{color:var(--accent);}
+  .mobile-overlay .btn{margin-top:12px;}
+
+  /* ================= HERO ================= */
+  .hero{
+    background:var(--ink);
+    color:#fff;
+    padding:96px 0 88px;
+    position:relative;
+    overflow:hidden;
+  }
+  .hero-grid{
+    display:grid;
+    grid-template-columns:1.05fr 0.95fr;
+    gap:56px;
+    align-items:center;
+  }
+  .eyebrow{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    font-size:13px;
+    font-weight:600;
+    letter-spacing:0.04em;
+    text-transform:uppercase;
+    color:var(--accent);
+    background:rgba(255,107,74,0.12);
+    padding:7px 14px;
+    border-radius:20px;
+    margin-bottom:24px;
+  }
+  .eyebrow-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);}
+  .hero h1{
+    font-size:56px;
+    font-weight:700;
+    color:#fff;
+    margin-bottom:22px;
+  }
+  .hero-sub{
+    font-size:19px;
+    color:rgba(255,255,255,0.68);
+    max-width:520px;
+    margin-bottom:36px;
+  }
+  .hero-actions{
+    display:flex;
+    align-items:center;
+    gap:28px;
+    flex-wrap:wrap;
+  }
+  .hero-link{
+    font-size:15px;
+    font-weight:600;
+    color:#fff;
+    display:inline-flex;
+    align-items:center;
+    gap:7px;
+    border-bottom:1px solid rgba(255,255,255,0.35);
+    padding-bottom:2px;
+    transition:border-color 150ms ease, color 150ms ease;
+  }
+  .hero-link:hover{color:var(--accent);border-color:var(--accent);}
+  .hero-note{
+    margin-top:28px;
+    font-size:13px;
+    color:rgba(255,255,255,0.4);
+  }
+
+  /* Hero visual: CSS dashboard mockup */
+  .hero-visual{
+    position:relative;
+  }
+  .mock-window{
+    background:var(--ink-soft);
+    border:1px solid rgba(255,255,255,0.09);
+    border-radius:14px;
+    padding:20px;
+    box-shadow:0 30px 80px -20px rgba(0,0,0,0.6);
+    position:relative;
+    z-index:2;
+  }
+  .mock-topbar{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    margin-bottom:18px;
+  }
+  .mock-dot{width:9px;height:9px;border-radius:50%;background:rgba(255,255,255,0.15);}
+  .mock-cols{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:12px;
+  }
+  .mock-col{
+    background:rgba(255,255,255,0.03);
+    border:1px solid rgba(255,255,255,0.06);
+    border-radius:9px;
+    padding:10px;
+    display:flex;
+    flex-direction:column;
+    gap:9px;
+  }
+  .mock-col-title{
+    font-size:10px;
+    font-weight:600;
+    text-transform:uppercase;
+    letter-spacing:0.05em;
+    color:rgba(255,255,255,0.35);
+    padding:2px 2px 6px;
+  }
+  .mock-card{
+    background:rgba(255,255,255,0.05);
+    border:1px solid rgba(255,255,255,0.07);
+    border-radius:7px;
+    padding:10px;
+  }
+  .mock-card-title{
+    height:8px;
+    width:78%;
+    border-radius:3px;
+    background:rgba(255,255,255,0.28);
+    margin-bottom:9px;
+  }
+  .mock-card-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+  }
+  .mock-tag{
+    font-size:9px;
+    font-weight:600;
+    padding:3px 7px;
+    border-radius:4px;
+    background:rgba(255,107,74,0.18);
+    color:var(--accent);
+  }
+  .mock-tag.blue{background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.55);}
+  .mock-avatars{display:flex;}
+  .mock-avatar{
+    width:16px;height:16px;
+    border-radius:50%;
+    border:2px solid var(--ink-soft);
+    margin-left:-5px;
+  }
+  .hero-float-card{
+    position:absolute;
+    background:#fff;
+    border-radius:10px;
+    padding:12px 14px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    box-shadow:0 20px 40px -10px rgba(0,0,0,0.4);
+    z-index:3;
+  }
+  .hero-float-1{
+    bottom:-22px;
+    left:-18px;
+    animation:float1 5s ease-in-out infinite;
+  }
+  .hero-float-2{
+    top:-18px;
+    right:-14px;
+    animation:float2 6s ease-in-out infinite;
+  }
+  @keyframes float1{0%,100%{transform:translateY(0);}50%{transform:translateY(-8px);}}
+  @keyframes float2{0%,100%{transform:translateY(0);}50%{transform:translateY(8px);}}
+  .float-check{
+    width:26px;height:26px;
+    border-radius:50%;
+    background:#1FAE6B;
+    display:flex;align-items:center;justify-content:center;
+    flex-shrink:0;
+  }
+  .float-text{font-size:12px;font-weight:600;color:var(--ink);}
+  .float-sub{font-size:10px;color:var(--text-muted);}
+
+  /* ================= SOCIAL PROOF ================= */
+  .proof{
+    background:var(--ink);
+    padding:0 0 84px;
+  }
+  .proof-label{
+    text-align:center;
+    font-size:12px;
+    font-weight:600;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    color:rgba(255,255,255,0.35);
+    margin-bottom:30px;
+  }
+  .proof-row{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-wrap:wrap;
+    gap:48px;
+  }
+  .proof-row span{
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:600;
+    font-size:20px;
+    color:rgba(255,255,255,0.32);
+    letter-spacing:-0.01em;
+  }
+
+  /* ================= SECTION shared ================= */
+  section{padding:96px 0;}
+  .section-head{
+    text-align:center;
+    max-width:620px;
+    margin:0 auto 56px;
+  }
+  .section-tag{
+    font-size:13px;
+    font-weight:600;
+    color:var(--accent);
+    letter-spacing:0.04em;
+    text-transform:uppercase;
+    margin-bottom:14px;
+    display:block;
+  }
+  .section-head h2{
+    font-size:38px;
+    margin-bottom:16px;
+  }
+  .section-head p{
+    font-size:17px;
+    color:var(--text-body);
+  }
+
+  /* ================= FEATURES ================= */
+  .features{background:var(--paper);}
+  .feature-grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:24px;
+  }
+  .feature-card{
+    background:#fff;
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:34px 28px;
+    transition:border-color 200ms ease, transform 200ms ease;
+  }
+  .feature-card:hover{
+    border-color:rgba(255,107,74,0.4);
+    transform:translateY(-3px);
+  }
+  .feature-icon{
+    width:46px;height:46px;
+    border-radius:10px;
+    background:#FFF1EC;
+    display:flex;align-items:center;justify-content:center;
+    margin-bottom:22px;
+  }
+  .feature-icon svg{width:22px;height:22px;stroke:var(--accent);}
+  .feature-card h3{
+    font-size:19px;
+    margin-bottom:10px;
+  }
+  .feature-card p{
+    font-size:15px;
+    color:var(--text-body);
+  }
+
+  /* ================= TESTIMONIALS ================= */
+  .testimonials{background:var(--paper-dim);}
+  .test-grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:24px;
+  }
+  .test-card{
+    background:#fff;
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:30px 26px;
+    display:flex;
+    flex-direction:column;
+    gap:20px;
+  }
+  .test-quote{
+    font-size:15.5px;
+    color:var(--ink);
+    line-height:1.65;
+  }
+  .test-quote::before{content:"\201C";}
+  .test-quote::after{content:"\201D";}
+  .test-person{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    margin-top:auto;
+  }
+  .avatar-circle{
+    width:42px;height:42px;
+    border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:700;
+    font-size:14px;
+    color:#fff;
+    flex-shrink:0;
+  }
+  .test-name{font-size:14.5px;font-weight:600;color:var(--ink);}
+  .test-role{font-size:13px;color:var(--text-muted);}
+
+  /* ================= PRICING ================= */
+  .pricing{background:var(--paper);}
+  .price-grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:24px;
+    align-items:stretch;
+  }
+  .price-card{
+    background:#fff;
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:34px 28px;
+    display:flex;
+    flex-direction:column;
+    position:relative;
+  }
+  .price-card.featured{
+    border:1px solid var(--accent);
+    box-shadow:0 20px 50px -20px rgba(255,107,74,0.35);
+  }
+  .price-badge{
+    position:absolute;
+    top:-13px;
+    left:50%;
+    transform:translateX(-50%);
+    background:var(--accent);
+    color:#fff;
+    font-size:11.5px;
+    font-weight:700;
+    letter-spacing:0.03em;
+    text-transform:uppercase;
+    padding:5px 14px;
+    border-radius:20px;
+  }
+  .price-tier{
+    font-size:14px;
+    font-weight:600;
+    color:var(--text-muted);
+    text-transform:uppercase;
+    letter-spacing:0.04em;
+    margin-bottom:14px;
+  }
+  .price-amount{
+    display:flex;
+    align-items:baseline;
+    gap:6px;
+    margin-bottom:8px;
+  }
+  .price-amount .num{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:42px;
+    font-weight:700;
+    color:var(--ink);
+  }
+  .price-amount .per{
+    font-size:14px;
+    color:var(--text-muted);
+  }
+  .price-desc{
+    font-size:14px;
+    color:var(--text-body);
+    margin-bottom:26px;
+  }
+  .price-list{
+    display:flex;
+    flex-direction:column;
+    gap:13px;
+    margin-bottom:30px;
+    flex-grow:1;
+  }
+  .price-list li{
+    display:flex;
+    align-items:flex-start;
+    gap:10px;
+    font-size:14.5px;
+    color:var(--text-body);
+  }
+  .price-list svg{
+    width:16px;height:16px;
+    flex-shrink:0;
+    margin-top:2px;
+    stroke:var(--accent);
+  }
+
+  /* ================= FAQ ================= */
+  .faq{background:var(--paper-dim);}
+  .faq-list{
+    max-width:760px;
+    margin:0 auto;
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+  }
+  .faq-item{
+    background:#fff;
+    border:1px solid var(--border);
+    border-radius:12px;
+    overflow:hidden;
+  }
+  .faq-question{
+    width:100%;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+    padding:22px 26px;
+    text-align:left;
+    font-family:'Space Grotesk',sans-serif;
+    font-size:16.5px;
+    font-weight:600;
+    color:var(--ink);
+  }
+  .faq-icon{
+    width:22px;height:22px;
+    flex-shrink:0;
+    position:relative;
+  }
+  .faq-icon::before,.faq-icon::after{
+    content:'';
+    position:absolute;
+    background:var(--ink);
+    transition:transform 250ms ease, opacity 250ms ease;
+  }
+  .faq-icon::before{
+    width:14px;height:2px;
+    top:10px;left:4px;
+  }
+  .faq-icon::after{
+    width:2px;height:14px;
+    top:4px;left:10px;
+  }
+  .faq-item.open .faq-icon::after{transform:rotate(90deg);opacity:0;}
+  .faq-item.open .faq-icon::before{background:var(--accent);}
+  .faq-answer{
+    max-height:0;
+    overflow:hidden;
+    transition:max-height 320ms ease;
+  }
+  .faq-answer-inner{
+    padding:0 26px 24px;
+    font-size:15px;
+    color:var(--text-body);
+    max-width:640px;
+  }
+
+  /* ================= FINAL CTA ================= */
+  .final-cta{
+    background:var(--ink);
+    color:#fff;
+    text-align:center;
+    padding:100px 0;
+  }
+  .final-cta h2{
+    color:#fff;
+    font-size:38px;
+    margin-bottom:18px;
+  }
+  .final-cta p{
+    color:rgba(255,255,255,0.65);
+    font-size:17px;
+    max-width:480px;
+    margin:0 auto 36px;
+  }
+  .final-cta .btn{font-size:16px;padding:15px 32px;}
+
+  /* ================= FOOTER ================= */
+  footer{
+    background:var(--ink);
+    border-top:1px solid rgba(255,255,255,0.08);
+    padding:70px 0 30px;
+  }
+  .footer-top{
+    display:grid;
+    grid-template-columns:1.4fr repeat(4,1fr);
+    gap:32px;
+    padding-bottom:56px;
+  }
+  .footer-brand .logo{color:#fff;}
+  .footer-brand p{
+    font-size:14px;
+    color:rgba(255,255,255,0.45);
+    margin-top:16px;
+    max-width:240px;
+  }
+  .footer-social{
+    display:flex;
+    gap:12px;
+    margin-top:22px;
+  }
+  .footer-social a{
+    width:36px;height:36px;
+    border-radius:8px;
+    background:rgba(255,255,255,0.06);
+    display:flex;align-items:center;justify-content:center;
+    transition:background-color 150ms ease;
+  }
+  .footer-social a:hover{background:var(--accent);}
+  .footer-social svg{width:16px;height:16px;stroke:#fff;}
+  .footer-col h4{
+    color:rgba(255,255,255,0.9);
+    font-size:14px;
+    font-weight:600;
+    margin-bottom:18px;
+  }
+  .footer-col ul{display:flex;flex-direction:column;gap:12px;}
+  .footer-col a{
+    font-size:14px;
+    color:rgba(255,255,255,0.5);
+    transition:color 150ms ease;
+  }
+  .footer-col a:hover{color:var(--accent);}
+  .footer-bottom{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding-top:26px;
+    border-top:1px solid rgba(255,255,255,0.08);
+    font-size:13px;
+    color:rgba(255,255,255,0.35);
+    flex-wrap:wrap;
+    gap:12px;
+  }
+
+  /* ================= RESPONSIVE ================= */
+  @media (max-width:1024px){
+    .hero h1{font-size:46px;}
+    .footer-top{grid-template-columns:1fr 1fr 1fr;row-gap:40px;}
+    .footer-brand{grid-column:1/-1;}
+  }
+
+  @media (max-width:900px){
+    .nav-links{display:none;}
+    .nav-cta .nav-login{display:none;}
+    .hamburger{display:flex;}
+    .hero-grid{grid-template-columns:1fr;}
+    .hero-visual{order:-1;max-width:440px;margin:0 auto 12px;}
+    .hero h1{font-size:40px;}
+    .feature-grid,.test-grid,.price-grid{grid-template-columns:1fr;}
+    section{padding:64px 0;}
+    .hero{padding:56px 0 64px;}
+    .proof{padding-bottom:56px;}
+  }
+
+  @media (max-width:480px){
+    .wrap{padding:0 18px;}
+    .hero h1{font-size:32px;}
+    .hero-sub{font-size:16.5px;}
+    section{padding:48px 0;}
+    .section-head h2{font-size:28px;}
+    .final-cta h2{font-size:28px;}
+    .footer-top{grid-template-columns:1fr 1fr;gap:36px 20px;}
+    .footer-brand{grid-column:1/-1;}
+    .proof-row{gap:26px;}
+    .proof-row span{font-size:16px;}
+    .hero-actions{gap:18px;}
+    .price-card.featured{transform:none;}
+    .footer-bottom{flex-direction:column;align-items:flex-start;}
+  }
+</style>
+</head>
+<body>
+
+<!-- ================= NAVBAR ================= -->
+<header class="navbar">
+  <div class="wrap nav-inner">
+    <a href="#" class="logo">
+      <span class="logo-mark">
+        <svg viewBox="0 0 16 16" fill="none"><path d="M2 12L6 6L9 9L14 3" stroke="#FF6B4A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </span>
+      FlowTrack
+    </a>
+    <nav class="nav-links">
+      <a href="#features">Features</a>
+      <a href="#testimonials">Customers</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+    <div class="nav-cta">
+      <a href="#" class="nav-login">Log in</a>
+      <a href="#pricing" class="btn btn-primary">Start free trial</a>
+      <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<div class="mobile-overlay" id="mobileOverlay">
+  <a href="#features">Features</a>
+  <a href="#testimonials">Customers</a>
+  <a href="#pricing">Pricing</a>
+  <a href="#faq">FAQ</a>
+  <a href="#" class="btn btn-primary">Start free trial</a>
+</div>
+
+<!-- ================= HERO ================= -->
+<section class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <span class="eyebrow"><span class="eyebrow-dot"></span>Now with automated status digests</span>
+      <h1>Stop chasing updates. Start shipping on schedule.</h1>
+      <p class="hero-sub">FlowTrack gives small teams one shared source of truth for tasks, owners, and deadlines — so nothing slips through a Slack thread again.</p>
+      <div class="hero-actions">
+        <a href="#pricing" class="btn btn-primary">Get started free</a>
+        <a href="#how-it-works" class="hero-link">See how it works →</a>
+      </div>
+      <p class="hero-note">No credit card required · Free for teams up to 5</p>
+    </div>
+    <div class="hero-visual">
+      <div class="mock-window">
+        <div class="mock-topbar">
+          <span class="mock-dot"></span><span class="mock-dot"></span><span class="mock-dot"></span>
+        </div>
+        <div class="mock-cols">
+          <div class="mock-col">
+            <div class="mock-col-title">To do · 3</div>
+            <div class="mock-card">
+              <div class="mock-card-title"></div>
+              <div class="mock-card-row"><span class="mock-tag blue">Design</span><div class="mock-avatars"><span class="mock-avatar" style="background:#FF6B4A"></span></div></div>
+            </div>
+            <div class="mock-card">
+              <div class="mock-card-title" style="width:60%"></div>
+              <div class="mock-card-row"><span class="mock-tag blue">Copy</span><div class="mock-avatars"><span class="mock-avatar" style="background:#5B8DEF"></span></div></div>
+            </div>
+          </div>
+          <div class="mock-col">
+            <div class="mock-col-title">In progress · 2</div>
+            <div class="mock-card">
+              <div class="mock-card-title"></div>
+              <div class="mock-card-row"><span class="mock-tag">Due Fri</span><div class="mock-avatars"><span class="mock-avatar" style="background:#FFB020"></span><span class="mock-avatar" style="background:#FF6B4A"></span></div></div>
+            </div>
+          </div>
+          <div class="mock-col">
+            <div class="mock-col-title">Done · 4</div>
+            <div class="mock-card">
+              <div class="mock-card-title" style="width:50%"></div>
+              <div class="mock-card-row"><span class="mock-tag blue">Shipped</span><div class="mock-avatars"><span class="mock-avatar" style="background:#1FAE6B"></span></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="hero-float-card hero-float-1">
+        <span class="float-check">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 8L6.5 11.5L13 4.5" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+        <span>
+          <div class="float-text">Deploy checklist done</div>
+          <div class="float-sub">2 min ago · Priya</div>
+        </span>
+      </div>
+      <div class="hero-float-card hero-float-2">
+        <span>
+          <div class="float-text">12 tasks on track</div>
+          <div class="float-sub">This week</div>
+        </span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= SOCIAL PROOF ================= -->
+<div class="proof">
+  <div class="wrap">
+    <p class="proof-label">Trusted by fast-moving teams at</p>
+    <div class="proof-row">
+      <span>NORTHBEAM</span>
+      <span>Ledger&amp;Co</span>
+      <span>ORBITAL</span>
+      <span>vantage</span>
+      <span>Fieldstone</span>
+    </div>
+  </div>
+</div>
+
+<!-- ================= FEATURES ================= -->
+<section class="features" id="features">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="section-tag">Features</span>
+      <h2>Built for teams that ship, not teams that meet</h2>
+      <p>Every feature exists to remove a specific kind of friction — not to add another dashboard nobody opens.</p>
+    </div>
+    <div class="feature-grid">
+      <div class="feature-card reveal">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+        </div>
+        <h3>Deadlines that don't hide in chat</h3>
+        <p>Every task carries its own due date and owner, visible on one timeline — so "I thought someone else had it" stops happening.</p>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/></svg>
+        </div>
+        <h3>One board, zero status meetings</h3>
+        <p>Automated daily digests summarize what moved and what's stuck, replacing the 30-minute standup with a 2-minute read.</p>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 20h5v-2a4 4 0 0 0-3-3.87M9 20H4v-2a4 4 0 0 1 3-3.87m5-4a4 4 0 1 0 0-8 4 4 0 0 0 0 8zm6 0a4 4 0 1 0 0-8"/></svg>
+        </div>
+        <h3>Ownership that's actually visible</h3>
+        <p>Assign a single directly-responsible person to every task, so accountability is a fact on the board, not a debate in a meeting.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= TESTIMONIALS ================= -->
+<section class="testimonials" id="testimonials">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="section-tag">Customers</span>
+      <h2>Teams that traded status meetings for shipped work</h2>
+      <p>Real problems, solved by making ownership and deadlines visible in one place.</p>
+    </div>
+    <div class="test-grid">
+      <div class="test-card reveal">
+        <p class="test-quote">Before FlowTrack we ran a 30-minute standup every morning just to figure out who owned what. Now that's a two-minute scroll through the board before coffee.</p>
+        <div class="test-person">
+          <span class="avatar-circle" style="background:#FF6B4A">MJ</span>
+          <span>
+            <div class="test-name">Maya Jensen</div>
+            <div class="test-role">Head of Ops, Northbeam</div>
+          </span>
+        </div>
+      </div>
+      <div class="test-card reveal">
+        <p class="test-quote">We missed a client deadline because the request lived in three different Slack channels. FlowTrack forced every task to have one owner and one due date, and we haven't missed one since.</p>
+        <div class="test-person">
+          <span class="avatar-circle" style="background:#5B8DEF">DK</span>
+          <span>
+            <div class="test-name">Daniel Kwon</div>
+            <div class="test-role">Founder, Fieldstone Studio</div>
+          </span>
+        </div>
+      </div>
+      <div class="test-card reveal">
+        <p class="test-quote">Our team is fully remote across four time zones. The daily digest means nobody has to wait up for a status update — it's just there when they log in.</p>
+        <div class="test-person">
+          <span class="avatar-circle" style="background:#1FAE6B">RS</span>
+          <span>
+            <div class="test-name">Renee Suárez</div>
+            <div class="test-role">Product Lead, Orbital</div>
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= PRICING ================= -->
+<section class="pricing" id="pricing">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="section-tag">Pricing</span>
+      <h2>Straightforward pricing, no seat-count surprises</h2>
+      <p>Start free. Upgrade when your team — not your invoice — tells you it's time.</p>
+    </div>
+    <div class="price-grid">
+      <div class="price-card reveal">
+        <div class="price-tier">Starter</div>
+        <div class="price-amount"><span class="num">$0</span><span class="per">/month</span></div>
+        <p class="price-desc">For small teams getting off spreadsheets and group chats.</p>
+        <ul class="price-list">
+          <li><svg viewBox="0 0 16 16" fill="none"><path d="M3 8L6.5 11.5L13 4.5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Up to 5 team members</li>
+          <li><svg viewBox="0 0 16 16" fill="none"><path d="M3 8L6.5 11.5L13 4.5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Unlimited tasks &amp; boards</li>
+          <li><svg viewBox="0 0 16 16" fill="none"><path d="M3 8L6.5 11.5L13 4.5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Daily status digest</li>
+          <li><svg viewBox="0 0 16 16" fill="none"><path d="M3 8L6.5 11.5L13 4.5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>7-day activity history</li>
+        </ul>
+        <a href="#" class="btn btn-outline btn-block">Start for free</a>
+      </div>
+      <div class="price-card featured reveal">
+        <span class="price-badge">Most popular</span>
+        <div class="price-tier">Team</div>
+        <div class="price-amount"><span class="num">$12</span><span class="per">/user/mo</span></div>
+        <p class="price-desc">For growing teams that need ownership across projects.</p>
+        <ul class="price-list">
+          <li><svg viewBox="0 0 16 16" fill="none"><path d="M3 8L6.5 11.5L13 4.5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Unlimited team members</li>
+          <li><svg viewBox="0 0 16 16" fill="none"><path d="M3 8L6.5 11.5L13 4.5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Cross-project timelines</li>
+          <li><svg viewBox="0 0 16 16" fill="none"><path d="M3 8L6.5 11.5L13 4.5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Custom automated digests</li>
+          <li><svg viewBox="0 0 16 16" fill="none"><path d="M3 8L6.5 11.5L13 4.5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Unlimited activity history</li>
+          <li><svg viewBox="0 0 16 16" fill="none"><path d="M3 8L6.5 11.5L13 4.5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Priority support</li>
+        </ul>
+        <a href="#" class="btn btn-primary btn-block">Start free trial</a>
+      </div>
+      <div class="price-card reveal">
+        <div class="price-tier">Scale</div>
+        <div class="price-amount"><span class="num">$24</span><span class="per">/user/mo</span></div>
+        <p class="price-desc">For organizations that need control across many teams.</p>
+        <ul class="price-list">
+          <li><svg viewBox="0 0 16 16" fill="none"><path d="M3 8L6.5 11.5L13 4.5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Everything in Team</li>
+          <li><svg viewBox="0 0 16 16" fill="none"><path d="M3 8L6.5 11.5L13 4.5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>SSO &amp; role-based access</li>
+          <li><svg viewBox="0 0 16 16" fill="none"><path d="M3 8L6.5 11.5L13 4.5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Audit logs &amp; data export</li>
+          <li><svg viewBox="0 0 16 16" fill="none"><path d="M3 8L6.5 11.5L13 4.5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Dedicated onboarding</li>
+        </ul>
+        <a href="#" class="btn btn-outline btn-block">Talk to sales</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= FAQ ================= -->
+<section class="faq" id="faq">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="section-tag">FAQ</span>
+      <h2>Questions teams ask before switching</h2>
+      <p>Can't find your answer here? Email us at hello@flowtrack.app.</p>
+    </div>
+    <div class="faq-list">
+      <div class="faq-item reveal">
+        <button class="faq-question">
+          How long does it take to migrate from spreadsheets or Trello?
+          <span class="faq-icon"></span>
+        </button>
+        <div class="faq-answer">
+          <div class="faq-answer-inner">Most teams import their existing board or spreadsheet and are fully set up in under 20 minutes. Our CSV importer maps tasks, owners, and due dates automatically, and you can adjust anything before it goes live.</div>
+        </div>
+      </div>
+      <div class="faq-item reveal">
+        <button class="faq-question">
+          Do I need to train my team to use it?
+          <span class="faq-icon"></span>
+        </button>
+        <div class="faq-answer">
+          <div class="faq-answer-inner">No. FlowTrack is built to feel familiar from the first login — if your team has used a task board before, they won't need a tutorial. Most teams are productive within their first session.</div>
+        </div>
+      </div>
+      <div class="faq-item reveal">
+        <button class="faq-question">
+          What happens when we go over 5 team members on Starter?
+          <span class="faq-icon"></span>
+        </button>
+        <div class="faq-answer">
+          <div class="faq-answer-inner">We'll notify you before anything changes. You can upgrade to Team at any point, and your boards, tasks, and history carry over with zero downtime or data loss.</div>
+        </div>
+      </div>
+      <div class="faq-item reveal">
+        <button class="faq-question">
+          Can I cancel or downgrade at any time?
+          <span class="faq-icon"></span>
+        </button>
+        <div class="faq-answer">
+          <div class="faq-answer-inner">Yes. There are no annual lock-ins or cancellation fees. Downgrade or cancel from your billing settings and you'll keep access through the end of your current billing period.</div>
+        </div>
+      </div>
+      <div class="faq-item reveal">
+        <button class="faq-question">
+          Is my team's data secure?
+          <span class="faq-icon"></span>
+        </button>
+        <div class="faq-answer">
+          <div class="faq-answer-inner">All data is encrypted in transit and at rest. Scale plans include SSO, role-based permissions, and exportable audit logs for full visibility into who accessed what.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= FINAL CTA ================= -->
+<section class="final-cta">
+  <div class="wrap reveal">
+    <h2>Give your team one place to know what's happening.</h2>
+    <p>Set up your first board in under 10 minutes — no credit card required.</p>
+    <a href="#pricing" class="btn btn-primary">Start your free trial</a>
+  </div>
+</section>
+
+<!-- ================= FOOTER ================= -->
+<footer>
+  <div class="wrap">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <a href="#" class="logo">
+          <span class="logo-mark">
+            <svg viewBox="0 0 16 16" fill="none"><path d="M2 12L6 6L9 9L14 3" stroke="#FF6B4A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+          FlowTrack
+        </a>
+        <p>One shared source of truth for tasks, owners, and deadlines — built for small teams.</p>
+        <div class="footer-social">
+          <a href="#" aria-label="X / Twitter"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4l16 16M20 4L4 20"/></svg></a>
+          <a href="#" aria-label="LinkedIn"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 11v5M8 8v.01M12 16v-3a2 2 0 0 1 4 0v3M12 13v3"/></svg></a>
+          <a href="#" aria-label="GitHub"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-4.3 1.4-4.3-2.5-6-3m12 5v-3.5c0-1 .1-1.4-.5-2 2.8-.3 5.5-1.4 5.5-6a4.6 4.6 0 0 0-1.3-3.2 4.2 4.2 0 0 0-.1-3.2s-1.1-.3-3.5 1.3a12.3 12.3 0 0 0-6.2 0C6.5 2.7 5.4 3 5.4 3a4.2 4.2 0 0 0-.1 3.2A4.6 4.6 0 0 0 4 9.4c0 4.6 2.7 5.7 5.5 6-.6.6-.6 1.2-.5 2V21"/></svg></a>
+        </div>
+      </div>
+      <div class="footer-col">
+        <h4>Product</h4>
+        <ul>
+          <li><a href="#features">Features</a></li>
+          <li><a href="#pricing">Pricing</a></li>
+          <li><a href="#">Integrations</a></li>
+          <li><a href="#">Changelog</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Company</h4>
+        <ul>
+          <li><a href="#">About</a></li>
+          <li><a href="#">Careers</a></li>
+          <li><a href="#">Blog</a></li>
+          <li><a href="#">Contact</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Resources</h4>
+        <ul>
+          <li><a href="#">Help center</a></li>
+          <li><a href="#faq">FAQ</a></li>
+          <li><a href="#">Guides</a></li>
+          <li><a href="#">API docs</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <ul>
+          <li><a href="#">Privacy</a></li>
+          <li><a href="#">Terms</a></li>
+          <li><a href="#">Security</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 FlowTrack, Inc. All rights reserved.</span>
+      <span>Made for teams who'd rather ship than meet.</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // Mobile menu toggle
+  const hamburger = document.getElementById('hamburger');
+  const overlay = document.getElementById('mobileOverlay');
+  hamburger.addEventListener('click', () => {
+    hamburger.classList.toggle('active');
+    overlay.classList.toggle('active');
+    document.body.style.overflow = overlay.classList.contains('active') ? 'hidden' : '';
+  });
+  overlay.querySelectorAll('a').forEach(link => {
+    link.addEventListener('click', () => {
+      hamburger.classList.remove('active');
+      overlay.classList.remove('active');
+      document.body.style.overflow = '';
+    });
+  });
+
+  // FAQ accordion — one open at a time
+  const faqItems = document.querySelectorAll('.faq-item');
+  faqItems.forEach(item => {
+    const question = item.querySelector('.faq-question');
+    const answer = item.querySelector('.faq-answer');
+    question.addEventListener('click', () => {
+      const isOpen = item.classList.contains('open');
+      faqItems.forEach(other => {
+        other.classList.remove('open');
+        other.querySelector('.faq-answer').style.maxHeight = null;
+      });
+      if (!isOpen) {
+        item.classList.add('open');
+        answer.style.maxHeight = answer.scrollHeight + 'px';
+      }
+    });
+  });
+
+  // Scroll-triggered fade-up reveal
+  const revealEls = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('is-visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.15 });
+  revealEls.forEach(el => observer.observe(el));
+</script>
+
+</body>
+</html>
